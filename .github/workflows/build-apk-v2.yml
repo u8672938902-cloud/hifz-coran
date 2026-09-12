@@ -1,0 +1,44 @@
+name: Construire APK Hifz
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Télécharger le projet
+        uses: actions/checkout@v4
+
+      - name: Décompresser Hifz
+        run: |
+          unzip -q Hifz_Android_Final.zip -d hifz_project
+          cp -R hifz_project/. .
+
+      - name: Corriger la version Java
+        run: |
+          sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Construire l'APK
+        run: gradle assembleDebug
+
+      - name: Récupérer l'APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hifz-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
